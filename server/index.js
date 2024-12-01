@@ -1,16 +1,12 @@
 const express = require("express");
-const cors = require("cors");
 const app = express();
-
-app.use(cors());
 app.use(express.json());
+require("./connection/dbConnection"); // Database singleton pattern.
+// const emailRouter = require("./routes/EmailRoute");
+//  app.use("/", emailRouter);
+const AdminRoutes = require("./routes/AdminRoutes");
 
-// Example route
-app.get("/", (req, res) => {
-  res.send("Server is running");
-});
-app.get("/home ", (req, res) => {
-  res.send("Server is running");
-});
+app.use("/", AdminRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
