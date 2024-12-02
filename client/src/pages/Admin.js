@@ -1,46 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import BackgroundAnimation from "../components/global/background";
+import Sidebar from "../components/Admin/sideBar";
+import Search from "../components/Admin/search";
+import DashboardSections from "../components/Admin/dashBoardSection";
+import { motion } from "framer-motion"; // For smoother animations
 
 export default function Dashboard() {
+  const [activeSection, setActiveSection] = useState("users");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const handleSectionClick = (section) => {
+    setActiveSection(section);
+  };
+
+  // Animation for smooth page transitions
+  const sectionVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: -50, transition: { duration: 0.3 } },
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-darkNavyBlue via-gray-900 to-darkNavyBlue text-pureWhite flex">
+      {/* Background Animation */}
       <BackgroundAnimation />
+
       {/* Sidebar */}
+      <Sidebar
+        activeSection={activeSection}
+        handleSectionClick={handleSectionClick}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+      />
+
       {/* Main Content */}
-      <div className="flex-1 ml-1/5 p-8 space-y-6">
-        {/* Nav */}
-        <nav className="flex justify-between items-center">
-          <div className="flex space-x-4 items-center">
-            <button className="bg-darkNavyBlue p-2 rounded-full hover:bg-neonMintGreen transition-all">
-              Settings
-            </button>
-            <button className="bg-darkNavyBlue p-2 rounded-full hover:bg-neonMintGreen transition-all">
-              Notifications
-            </button>
-            <button className="bg-darkNavyBlue p-2 rounded-full hover:bg-neonMintGreen transition-all">
-              Sign In
-            </button>
-          </div>
-        </nav>
+      <div className="flex-1 ml-16 md:ml-1/5 p-8 space-y-6 transition-all duration-300">
+        {/* Header */}
+        <Search />
 
-        {/* Dashboard Sections */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-darkNavyBlue p-6 rounded-lg flex flex-col items-center">
-            Section 1
-          </div>
-          <div className="bg-darkNavyBlue p-6 rounded-lg flex flex-col items-center">
-            Section 2
-          </div>
-          <div className="bg-darkNavyBlue p-6 rounded-lg flex flex-col items-center">
-            Section 3
-          </div>
-          <div className="bg-darkNavyBlue p-6 rounded-lg flex flex-col items-center">
-            Section 4
-          </div>
-        </div>
-
-        {/* Additional Section */}
-        <div className="bg-darkNavyBlue p-6 rounded-lg">Additional Section</div>
+        {/* Dashboard Sections with animation */}
+        <motion.div
+          className="space-y-6"
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <DashboardSections activeSection={activeSection} />
+        </motion.div>
       </div>
     </div>
   );
