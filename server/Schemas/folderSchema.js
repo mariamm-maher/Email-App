@@ -12,6 +12,17 @@ const folderSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  emailsID: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "emails",
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
