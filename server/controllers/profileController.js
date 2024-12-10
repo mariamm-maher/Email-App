@@ -5,36 +5,36 @@ const User = require("../Schemas/userSchema");
 const Folder = require("../Schemas/folderSchema");
 const Notification = require("../Schemas/notificationSchema");
 //move to user controller
-// const createUser = async (req, res) => {
-//   try {
-//     const { name, email, password } = req.body;
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ message: "Email already exists" });
-//     }
+const createUser = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
 
-//     const user = {
-//       name: name,
-//       email: email,
-//       password: password,
-//       // role: role || "user", // Default role is 'user'
-//     };
+    const user = {
+      name: name,
+      email: email,
+      password: password,
+      // role: role || "user", // Default role is 'user'
+    };
 
-//     const newUser = new User(user);
+    const newUser = new User(user);
 
-//     await newUser.save();
-//     if (password) {
-//       const salt = await bcrypt.genSalt(10);
-//       user.password = await bcrypt.hash(password, salt);
-//     }
-//     res.status(201).json({ message: "User created successfully", user });
-//   } catch (error) {
-//     console.error("Error creating user:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Error creating user", error: error.message });
-//   }
-// };
+    await newUser.save();
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+    res.status(201).json({ message: "User created successfully", user });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res
+      .status(500)
+      .json({ message: "Error creating user", error: error.message });
+  }
+};
 
 const retrieveProfile = async (req, res) => {
   try {
@@ -174,4 +174,5 @@ const updateProfile = async (req, res) => {
 module.exports = {
   retrieveProfile,
   updateProfile,
+  createUser,
 };

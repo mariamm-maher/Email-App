@@ -5,6 +5,7 @@ require("./connection/dbConnection"); // Database singleton pattern.
 // const emailRouter = require("./routes/EmailRoute");
 //  app.use("/", emailRouter);
 const AdminRoutes = require("./routes/AdminRoutes");
+const ProfileRoutes = require("./routes/profileRoute");
 
 app.use("/", AdminRoutes);
 
