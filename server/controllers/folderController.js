@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const folders = require("../Schemas/folderSchema.js");
-
-exports.createFolder = async (req, res) => {
+const createFolder = async (req, res) => {
   try {
     const user = new User();
     const result = await folders.find({ name: req.body.name });
@@ -15,7 +14,7 @@ exports.createFolder = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
-exports.deleteFolder = async (req, res) => {
+const deleteFolder = async (req, res) => {
   try {
     const user = new User();
     const result = await folders.find({ _id: req.params.folderId });
@@ -28,7 +27,7 @@ exports.deleteFolder = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
-exports.renameFolder = async (req, res) => {
+const renameFolder = async (req, res) => {
   try {
     const user = new User();
     const result = await folders.find({ name: req.body.name });
@@ -43,7 +42,7 @@ exports.renameFolder = async (req, res) => {
   }
 };
 
-exports.moveToSpam = async (req, res) => {
+const moveToSpam = async (req, res) => {
   try {
     const user = new User();
 
@@ -54,7 +53,7 @@ exports.moveToSpam = async (req, res) => {
   }
 };
 
-exports.searchEmails = async (req, res) => {
+const searchEmails = async (req, res) => {
   try {
     const user = new User();
 
@@ -64,4 +63,12 @@ exports.searchEmails = async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+};
+
+module.exports = {
+  createFolder,
+  deleteFolder,
+  renameFolder,
+  moveToSpam,
+  searchEmails,
 };
