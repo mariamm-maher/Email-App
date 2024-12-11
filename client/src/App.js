@@ -13,13 +13,15 @@ import Sent from "./components/User/Sent";
 import Trash from "./components/User/Trash";
 import Spam from "./components/User/Spam";
 import Email from "./components/User/email";
+import Profile from "./pages/UserProfile";
 // import Layout from "./components/User/layout";
+
 export default function App() {
   return (
     <Router>
       <Routes>
         {/* <Route path='/' element={<Layout/>}>
-        <Route index element={<HomePage/>}/> */}
+    <Route index element={<HomePage/>}/> */}
         <Route path="/Draft" element={<Draft />} />
         <Route path="/Starred" element={<Starred />} />
         <Route path="/Sent" element={<Sent />} />
@@ -32,6 +34,7 @@ export default function App() {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/admin/*" element={<Admin />} />
       </Routes>
     </Router>

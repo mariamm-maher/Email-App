@@ -8,6 +8,7 @@ import Users from "./users";
 import Emails from "./Emails";
 import Footer from "../components/global/footer";
 import AdminDashboard from "./dashboard";
+import Map from "./Maps";
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("users");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -51,6 +52,7 @@ export default function Dashboard() {
             <Route path="/users" element={<Users />} />
             <Route path="/emails" element={<Emails />} />
             <Route path="/" element={<AdminDashboard />} />
+            <Route path="/Map" element={<Map />} />
           </Routes>
           <Outlet />
         </motion.div>
