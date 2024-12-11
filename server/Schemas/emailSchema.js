@@ -3,10 +3,8 @@ const mongoose = require("mongoose");
 const emailSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   body: { type: String },
-  // sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, //omar modifications
-  // recipients: [
-  //   { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  // ],
+  from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, //omar modifications
+  to: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }],
   cc: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // For CC recipients
   attachments: [{ type: String }],
   status: {

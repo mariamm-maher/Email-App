@@ -22,7 +22,7 @@ class User extends Person {
     const folderT = {
       name: folderName,
       isCustom: true,
-      userId: "6751b9c5614bdea23be91136",
+      userId: "6751b9c5614bdea23be91136", // what is this ?????????!!!!!!!!
     };
 
     const folder = new folders(folderT);
@@ -36,7 +36,7 @@ class User extends Person {
   }
   async moveToSpam(emailId) {
     await folders.updateOne(
-      { userId: "6751b9c5614bdea23be91136", name: "spam" },
+      { userId: "6751b9c5614bdea23be91136", name: "spam" }, // there proplem here
       { $push: { emailsID: emailId } }
     );
   }

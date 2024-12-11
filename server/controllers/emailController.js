@@ -1,48 +1,131 @@
 // const path = require("path");
 const nodemailer = require("nodemailer");
 const EmailModel = require("../Schemas/emailSchema");
+const User = require("../Schemas/userSchema");
+// const sendEmail = async (req, res) => {
+//   const { from, to, subject, cc, messages, status } = req.body;
+
+//   const email = new EmailModel({
+//     from,
+//     to,
+//     subject,
+//     cc,
+//     messages,
+//     sentAt: status === "sent" ? new Date() : null,
+//     emailStatus: status || "draft",
+//   });
+
+//   await email.save();
+
+//   const mailOptions = {
+//     from,
+//     to,
+//     subject,
+//     cc,
+//     text: messages,
+//   };
+
+//   if (status === "sent") {
+//     const transporter = nodemailer.createTransport({
+//       service: " gmail ",
+//     });
+
+//     transporter.sendMail(mailOptions, (error, info) => {
+//       if (error) {
+//         console.error(error);
+//         res.status(500).send("Error sending email:" + error.message);
+//       } else {
+//         console.log("Email sent: " + info.response);
+//         res.status(200).send("Email sent successfully");
+//       }
+//     });
+//   } else {
+//     res.status(200).send("Email saved as draft");
+//   }
+// };
 
 const sendEmail = async (req, res) => {
-  const { from, to, subject, cc, messages, status } = req.body;
+  try {
+    const { from, to, cc, subject, body, status, folder, attachments } =
+      req.body;
 
-  const email = new EmailModel({
-    from,
-    to,
-    subject,
-    cc,
-    messages,
-    sentAt: status === "sent" ? new Date() : null,
-    emailStatus: status || "draft",
-  });
+    // Ensure 'from' and 'to' are provided
+    if (!from || !to || to.length === 0) {
+      return res.status(400).json({ error: "No recipients defined" });
+    }
 
-  await email.save();
-
-  const mailOptions = {
-    from,
-    to,
-    subject,
-    cc,
-    text: messages,
-  };
-
-  if (status === "sent") {
-    const transporter = nodemailer.createTransport({
-      service: " actual email service ",
+    // Create the new email document based on the provided data
+    const email = new EmailModel({
+      from,
+      to,
+      cc,
+      subject,
+      body,
+      status: {
+        isDraft: status === "draft" ? true : false,
+        isArchived: false,
+        isSpam: false,
+        isImportant: false,
+      },
+      folder,
+      attachments,
+      sentAt: status === "sent" ? new Date() : null, // Set the sent timestamp only if the email is sent
+      isPinned: false,
+      muteStatus: false,
+      repliedTo: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(error);
-        res.status(500).send("Error sending email");
-      } else {
-        console.log("Email sent: " + info.response);
-        res.status(200).send("Email sent successfully");
+    // Save the email in the database
+    await email.save();
+
+    // If the email is not a draft, send it via Nodemailer
+    if (status === "sent") {
+      const user = await User.findById(from); // Find the user to get email address
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
       }
-    });
-  } else {
-    res.status(200).send("Email saved as draft");
+
+      const mailOptions = {
+        from: user.email, // User's email address
+        to: to.map((userId) => userId.email), // Map to get emails of all recipients
+        cc: cc ? cc.map((userId) => userId.email) : [], // Map cc if any
+        subject: subject,
+        text: body,
+        attachments: attachments || [], // If there are attachments, include them
+      };
+
+      // Create a transporter to send the email via SMTP (e.g., Gmail)
+      const transporter = nodemailer.createTransport({
+        service: "gmail", // Replace with your email service provider
+        auth: {
+          user: "your-email@gmail.com", // Your email address
+          pass: "your-email-password", // Your email password or app password
+        },
+      });
+
+      // Send the email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(error);
+          return res
+            .status(500)
+            .json({ error: "Error sending email: " + error.message });
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({ message: "Email sent successfully" });
+        }
+      });
+    } else {
+      return res.status(200).json({ message: "Email saved as draft" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error sending email: " + error.message });
   }
 };
+
 const forwardEmail = async (req, res) => {
   const { emailId, forwardTo, status } = req.body;
 
