@@ -1,52 +1,70 @@
 // const path = require("path");
-const nodemailer = require("nodemailer");
-const EmailModel = require("../Schemas/emailSchema");
+
+//const nodemailer = require("nodemailer");
+const EmailModel = require('../Schemas/emailSchema');
+const mongoose = require('mongoose');
 
 const sendEmail = async (req, res) => {
-  const { from, to, subject, cc, messages, status } = req.body;
+  const { from, to, subject, cc, messages, status, folder, repliedTo, isPinned, muteStatus } = req.body;
 
-  const email = new EmailModel({
-    from,
-    to,
-    subject,
-    cc,
-    messages,
-    sentAt: status === "sent" ? new Date() : null,
-    emailStatus: status || "draft",
-  });
+ 
+  console.log(req.body);
 
-  await email.save();
+  try {
+  
+    if (!from || !to || !subject || !messages || !folder) {
+      return res.status(400).send("Missing required fields");
+    }
 
-  const mailOptions = {
-    from,
-    to,
-    subject,
-    cc,
-    text: messages,
-  };
+    if (!mongoose.Types.ObjectId.isValid(from) || !mongoose.Types.ObjectId.isValid(to)) {
+      return res.status(400).send("Invalid from or to ObjectId");
+    }
+    if (!mongoose.Types.ObjectId.isValid(folder)) {
+      return res.status(400).send("Invalid folder ObjectId");
+    }
 
-  if (status === "sent") {
-    const transporter = nodemailer.createTransport({
-      service: " actual email service ",
+    const email = new EmailModel({
+      from: from,
+      to: to,
+      subject,
+      cc: Array.isArray(cc) ? cc.map(id => id) : [], 
+      body: messages,
+      status: {
+        isDraft: status === "draft" || false,
+        isArchived: status === "archived" || false,
+        isSpam: status === "spam" || false,
+        isImportant: status === "important" || false,
+        isSent: status === "sent" || false,
+      },
+      folder: folder, 
+      repliedTo: repliedTo ? repliedTo: null, 
+      isPinned: isPinned || false,  
+      muteStatus: muteStatus || false, 
+      sentAt: status === "sent" ? new Date() : null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(error);
-        res.status(500).send("Error sending email");
-      } else {
-        console.log("Email sent: " + info.response);
-        res.status(200).send("Email sent successfully");
-      }
-    });
-  } else {
-    res.status(200).send("Email saved as draft");
+    await email.save();
+
+    if (status === "sent") {
+      return res.status(200).send("Email saved as sent");
+    } else if (status === "draft") {
+      return res.status(200).send("Email saved as draft");
+    } else {
+      return res.status(200).send("Email saved successfully");
+    }
+  } catch (error) {
+    console.error("Error saving email:", error);
+    res.status(500).send(`Error processing email request: ${error.message}`);
   }
 };
+
 const forwardEmail = async (req, res) => {
   const { emailId, forwardTo, status } = req.body;
 
   try {
+    
     const originalEmail = await EmailModel.findById(emailId);
 
     if (!originalEmail) {
@@ -55,112 +73,112 @@ const forwardEmail = async (req, res) => {
 
     const forwardedEmail = new EmailModel({
       from: originalEmail.from,
-      to: forwardTo,
+      to: forwardTo, 
       subject: `Fwd: ${originalEmail.subject}`,
-      cc: null,
-      messages: `Forwarded message:\n\n${originalEmail.messages}`,
+      cc: originalEmail.cc, 
+      body: `Forwarded message:\n\n${originalEmail.body}`,
+      status: { isDraft: status === "draft" },
+      folder: originalEmail.folder, 
+      repliedTo: originalEmail.repliedTo,
       sentAt: status === "sent" ? new Date() : null,
-      emailStatus: status || "draft",
     });
 
+    
     await forwardedEmail.save();
 
-    const mailOptions = {
-      from: originalEmail.from,
-      to: forwardTo,
-      subject: `Fwd: ${originalEmail.subject}`,
-      text: `Forwarded message:\n\n${originalEmail.messages}`,
-    };
-
+   
     if (status === "sent") {
-      const transporter = nodemailer.createTransport({
-        service: "actual email service",
-      });
-
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error(error);
-          res.status(500).send("Error sending forwarded email");
-        } else {
-          console.log("Forwarded email sent: " + info.response);
-          res.status(200).send("Email forwarded successfully");
-        }
-      });
+      res.status(200).send("Forwarded email saved and marked as sent");
     } else {
       res.status(200).send("Forwarded email saved as draft");
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error forwarding email:", error);
     res.status(500).send("Error forwarding email");
   }
 };
 const repliedTo = async (req, res) => {
   const { emailId, replyMessage, replyAll } = req.body;
-  const recipients = replyAll
-    ? [originalEmail.from, ...originalEmail.cc].filter(Boolean)
-    : [originalEmail.from];
 
   try {
+   
     const originalEmail = await EmailModel.findById(emailId);
+    
     if (!originalEmail) {
       return res.status(404).send("Original email not found");
     }
-    const replyOptions = {
-      from: originalEmail.to, //  the sender
-      to: originalEmail.from, // The recipient
-      cc: replyAll ? originalEmail.cc : undefined,
-      subject: `Re: ${originalEmail.subject}`,
-      text: replyMessage,
-    };
-    const transporter = nodemailer.createTransport({
-      service: "hyroh ll sender page",
-    });
-    const info = await transporter.sendMail(replyOptions);
-    console.log("Reply sent: " + info.response);
 
+   
+    const recipients = replyAll
+      ? [originalEmail.from, ...originalEmail.cc].filter(Boolean)
+      : [originalEmail.from]; 
+
+  
     const replyEmail = new EmailModel({
-      from: replyOptions.from,
-      to: recipients.join,
-      cc: replyAll ? originalEmail.cc : undefined,
-      subject: replyOptions.subject,
-      messages: replyMessage,
-      sentAt: new Date(),
+      from: originalEmail.to,  
+      to: originalEmail.from,  
+      cc: replyAll ? originalEmail.cc : undefined, 
+      subject: `Re: ${originalEmail.subject}`,  
+      body: replyMessage,  
+      repliedTo: originalEmail._id,  
+      sentAt: new Date(),  
+      isPinned: originalEmail.isPinned,  
+      folder: originalEmail.folder,  
     });
 
+  
     await replyEmail.save();
-    res.status(200).send("Reply sent and saved successfully");
+
+    res.status(200).send("Reply saved successfully");
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error sending reply");
+    console.error("Error replying to email:", error);
+    res.status(500).send("Error saving reply email");
   }
 };
 const markEmailReadStatus = async (req, res) => {
   const { emailId, isRead } = req.body;
 
   try {
-    const email = await EmailModel.findByIdAndUpdate(
-      emailId,
-      { isRead },
-      { new: true }
-    );
-
-    if (!email) {
-      return res.status(404).send("Email not found");
+    if (!emailId || isRead === undefined) {
+      return res.status(400).json({ error: "Missing required fields: emailId or isRead" });
     }
 
-    const statusText = isRead ? "read" : "unread";
-    res.status(200).send(`Email marked as ${statusText}`);
+    const email = await EmailModel.findById(emailId);
+
+    if (!email) {
+      return res.status(404).json({ error: "Email not found" });
+    }
+
+    email.status.isRead = true;
+
+    const updatedEmail = await email.save().catch(err => {
+      console.error("Save error:", err);
+      return res.status(500).json({ error: err.message || "Error saving updated email" });
+    });
+
+    // console.log("Updated email:", updatedEmail);
+
+    return res.status(200).json({
+      message: "Email successfully marked as read",
+      email: updatedEmail,
+    });
   } catch (error) {
-    console.error("Error updating email read status:", error);
-    res.status(500).send("Error updating email read status");
+    console.error("Error updating email read status:", error.message);
+    return res.status(500).json({ error: error.message || "Error updating email read status" });
   }
 };
+
+
 module.exports = {
   sendEmail,
   forwardEmail,
   repliedTo,
   markEmailReadStatus,
+  EmailModel,
 };
+
+
+
 // // controllers/emailController.js
 // const { publishEmailEvent } = require("../mqtt/mqttClient"); // Import the MQTT client
 
