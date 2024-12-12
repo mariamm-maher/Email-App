@@ -1,12 +1,10 @@
 import React from "react";
 
 
-const Starred=()=>{
+const Sent=()=>{
 
 
-return(<>
-
-<div class=" w-5/6 sm:ml-64 ">
+return(<><div class=" w-5/6 sm:ml-64 ">
 <div class="p-4  mt-14 ">
   
   
@@ -95,4 +93,4 @@ return(<>
 
 }
 
-export default Starred;
+export default Sent;

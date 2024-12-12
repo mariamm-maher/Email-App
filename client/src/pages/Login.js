@@ -1,15 +1,52 @@
 import React, { useState } from "react";
 import InputField from "../components/global/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import BackgroundAnimation from "../components/global/background";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(""); // For displaying error messages
+  const navigate = useNavigate(); // For navigation
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
+
+    // Basic validation
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    try {
+      // API call to check user login
+      const response = await fetch("https://api.example.com/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check user role and navigate
+        if (data.role === "admin") {
+          navigate("/dashboard"); // Redirect to admin dashboard
+        } else if (data.role === "user") {
+          navigate("/home"); // Redirect to homepage for regular users
+        } else {
+          setError("Unknown user role. Contact support.");
+        }
+      } else {
+        // Handle login errors
+        setError(data.message || "Invalid email or password.");
+      }
+    } catch (err) {
+      // Handle network or other errors
+      setError("An error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -23,8 +60,11 @@ export default function LoginPage() {
           Welcome Back!
         </h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className=" flex flex-col space-y-4 items-center">
-            <div className="flex flex-col space-y-1 ">
+          {error && (
+            <p className="text-red-500 text-center font-semibold">{error}</p>
+          )}
+          <div className="flex flex-col space-y-4 items-center">
+            <div className="flex flex-col space-y-1">
               <label htmlFor="email" className="text-pureWhite font-semibold">
                 Email
               </label>
@@ -38,7 +78,7 @@ export default function LoginPage() {
                 className="py-3 px-4 rounded-lg bg-darkNavyBlue text-pureWhite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neonMintGreen"
               />
             </div>
-            <div className="flex flex-col space-y-1 ">
+            <div className="flex flex-col space-y-1">
               <label
                 htmlFor="password"
                 className="text-pureWhite font-semibold"

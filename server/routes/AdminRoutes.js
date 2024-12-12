@@ -1,4 +1,3 @@
-
 const express = require("express");
 const adminController = require("../controllers/AdminController");
 // const { verifyAdminToken } = require("../util/auth"); later
@@ -10,6 +9,7 @@ router.get(
 
   adminController.viewAllEmails
 );
+router.post("/api/admin/notify", adminController.notifyUsers);
 // router.patch("/users/deactivate/:userId", adminController.deactivateUser);
 
 module.exports = router;

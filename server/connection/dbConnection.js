@@ -1,5 +1,6 @@
 // connection/dbConnection.js
 const mongoose = require("mongoose");
+const newId = new mongoose.Types.ObjectId();
 
 // Database Singleton Class
 

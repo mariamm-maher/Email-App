@@ -9,8 +9,7 @@ const emailController = require("../controllers/profileController");
 const { retrieveProfile } = require("../controllers/profileController");
 
 // move to user route
-// router.post("/api/user", emailController.createUser);
-
+router.post("/api/user", emailController.createUser);
 router.get("/api/user/profile", emailController.retrieveProfile);
 router.put("/api/user/update", emailController.updateProfile); // Retrieve profile
 

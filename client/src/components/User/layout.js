@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet , Link } from "react-router-dom";
 import Navbar from "./navbar";
 import Sidebar from "./sidebar";
 
@@ -7,7 +7,7 @@ import Sidebar from "./sidebar";
 const Layout=()=>{
     
    return(<>
-            <Navbar/>
+        <Navbar/>
 
             <div className="flex">
                 <Sidebar/>

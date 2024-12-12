@@ -1,31 +1,20 @@
 import React from "react";
 import Navbar from "../components/User/navbar";
 import Sidebar from "../components/User/sidebar";
-import Inbox from "../components/User/Inbox";
+import Emails from "../components/User/email";
 
+function HomePage() {
+  return (
+    <>
+      <Navbar />
 
+      <div className="flex">
+        <Sidebar />
 
- function HomePage(){
-
-    return(
-        <>
-
-        <Navbar/>
-
-    <div className="flex">
-        <Sidebar/>
-        <Inbox/>
-        
-    </div>  
-        
-    </>) }
+        <Emails />
+      </div>
+    </>
+  );
+}
 
 export default HomePage;
-
-
-
-
-
-
-
-

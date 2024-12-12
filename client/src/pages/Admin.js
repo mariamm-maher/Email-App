@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Routes, Route, Outlet } from "react-router-dom";
 import BackgroundAnimation from "../components/global/background";
 import Sidebar from "../components/Admin/sideBar";
-import Search from "../components/Admin/search";
-import DashboardSections from "../components/Admin/dashBoardSection";
-import { motion } from "framer-motion"; // For smoother animations
-
+import { motion } from "framer-motion";
+import Navbar from "../components/Admin/navBar";
+import Users from "./users";
+import Emails from "./Emails";
+import Footer from "../components/global/footer";
+import AdminDashboard from "./dashboard";
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("users");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -21,10 +24,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-darkNavyBlue via-gray-900 to-darkNavyBlue text-pureWhite flex">
+    <div className="min-h-screen flex ">
       {/* Background Animation */}
       <BackgroundAnimation />
-
       {/* Sidebar */}
       <Sidebar
         activeSection={activeSection}
@@ -32,11 +34,10 @@ export default function Dashboard() {
         isCollapsed={isSidebarCollapsed}
         setIsCollapsed={setIsSidebarCollapsed}
       />
-
+      <Navbar />
       {/* Main Content */}
       <div className="flex-1 ml-16 md:ml-1/5 p-8 space-y-6 transition-all duration-300">
-        {/* Header */}
-        <Search />
+        {/* <Search /> */}
 
         {/* Dashboard Sections with animation */}
         <motion.div
@@ -46,8 +47,15 @@ export default function Dashboard() {
           animate="visible"
           exit="exit"
         >
-          <DashboardSections activeSection={activeSection} />
+          <Routes>
+            <Route path="/users" element={<Users />} />
+            <Route path="/emails" element={<Emails />} />
+            <Route path="/" element={<AdminDashboard />} />
+          </Routes>
+          <Outlet />
         </motion.div>
+
+        <Footer />
       </div>
     </div>
   );
