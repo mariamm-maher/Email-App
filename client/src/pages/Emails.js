@@ -90,7 +90,7 @@ const Emails = () => {
     <>
       <Header mainText="Emails" subText="Acess all System Emails" />
       <div className="flex items-center p-6 justify-center space-x-4">
-        <Search />
+        <Search placeholder="Search Emails..." />
         <Filter />
       </div>
       <div className="flex justify-center items-center min-h-screen px-4">

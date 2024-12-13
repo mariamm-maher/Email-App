@@ -111,7 +111,7 @@ const Users = () => {
 
       <div className="flex items-center p-6 justify-between ">
         <div className="flex-grow pr-4">
-          <Search />
+          <Search placeholder="Search users..." />
         </div>
         <div className="flex items-center space-x-4">
           <Filter />
