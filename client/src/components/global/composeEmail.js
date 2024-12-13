@@ -43,8 +43,8 @@ const ComposeEmail = () => {
         <div className="flex justify-between items-center">
           <button
             type="submit"
-            className="px-6 py-2 bg-neonMintGreen text-darkNavyBlue rounded-lg hover:bg-gray-300 transition-all duration-300"
-          ></button>
+            className="px-6 rounded-2xl py-2 bg-neonMintGreen text-darkNavyBlue rounded-lg hover:bg-gray-300 transition-all duration-300"
+          >Submit</button>
         </div>
       </form>
     </div>

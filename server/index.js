@@ -6,11 +6,12 @@ const emailRoute = require("./routes/emailRoute");
 const AdminRoutes = require("./routes/AdminRoutes");
 const ProfileRoutes = require("./routes/profileRoute");
 const folderRoutes = require("./routes/folderRoutes");
-// app.use("/", emailRoute);
+// const profileRoute = require("./routes/profileRoute");
+app.use("/", emailRoute);
 
 // app.use("/", folderRoutes);
 
-app.use("/", AdminRoutes);
+// app.use("/", AdminRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -2,16 +2,16 @@ import React from "react";
 import Navbar from "../components/User/navbar";
 import Sidebar from "../components/User/sidebar";
 import Emails from "../components/User/email";
-import Main from "../components/User/mainLayout";
+import Layout from "../components/User/layout";
 
 function HomePage() {
   return (
     <>
-      <Navbar />
+      <Layout />
       <div className="flex">
         <Sidebar />
         {/* <Emails /> */}
-        <Main />
+        {/* <Main /> */}
       </div>
     </>
   );

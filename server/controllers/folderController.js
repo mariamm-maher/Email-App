@@ -65,10 +65,25 @@ const searchEmails = async (req, res) => {
   }
 };
 
+const createRecycleBinFolder = async (req, res) => {
+  const existingFolder = await folders.findOne({ name: "Recycle Bin" });
+
+  if (!existingFolder) {
+    await folders.create({
+      name: "Recycle Bin",
+      userId: "674e23c4be7dcb4a41c49a8f",
+    });
+    res.status(200).json({ mss: "Recycle Bin folder created " });
+  } else {
+    console.log("Recycle Bin folder already exists");
+  }
+};
+
 module.exports = {
   createFolder,
   deleteFolder,
   renameFolder,
   moveToSpam,
   searchEmails,
+  createRecycleBinFolder,
 };

@@ -1,10 +1,12 @@
 import React from "react";
+import Layout from "./layout";
 
 
 const Trash=()=>{
 
 
 return(<>
+<Layout/>
 <div class=" w-5/6 sm:ml-64 ">
 <div class="p-4  mt-14 ">
   
