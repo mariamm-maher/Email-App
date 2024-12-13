@@ -1,5 +1,11 @@
 const express = require("express");
 const emailController = require("../controllers/emailController");
+// const authController = require("../controllers/authenication");
+// const redis = require("../middlewares/redis");
+// const router = express.Router(); // ??
+
+// router.post("/listEmailINfolder", authController.AuthToken, redis.checkBlacklist,);
+
 router.get("/", (req, res) => {
   res.send("Server is running");
 });
@@ -20,7 +26,11 @@ router.post("/api/Email/replay", emailController.repliedTo);
 router.get("/api/Email/mark", emailController.markEmailReadStatus);
 router.get("/api/Email/forward", emailController.forwardEmail);
 //router.get('/apiEmail/forward', (req, res) => {
- // res.send('Endpoint is working!');
+// res.send('Endpoint is working!');
 //});
+router.post("/api/email/retrieveEmail", emailController.retrieveEmailById);
+router.post("/api/email/delete", emailController.deleteEmail);
+router.post("/api/email/recover", emailController.recoverEmail);
+router.post("/api/email/sort", emailController.sortEmails);
 
 module.exports = router;

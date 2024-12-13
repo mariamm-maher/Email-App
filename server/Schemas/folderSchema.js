@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const folderSchema = new mongoose.Schema({
+  userEmail: {
+    type: String,
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -10,23 +14,18 @@ const folderSchema = new mongoose.Schema({
   },
   isCustom: {
     type: Boolean,
-    default: false,
+    default: true,
   },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  emailsID: [
+  emailsArray: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "emails",
     },
   ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
 });
 
 module.exports = mongoose.model("folders", folderSchema);

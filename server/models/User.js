@@ -1,7 +1,6 @@
 const Person = require("./Person");
 const emails = require("../Schemas/emailSchema.js");
 const folders = require("../Schemas/folderSchema.js");
-
 //inherts from person
 class User extends Person {
   constructor(
@@ -18,11 +17,12 @@ class User extends Person {
     this.activeStatus = activeStatus;
     this.profileImage = profileImage;
   }
-  async createFolder(folderName) {
+
+  async createFolder(folderName, userEmail) {
     const folderT = {
       name: folderName,
       isCustom: true,
-      userId: "6751b9c5614bdea23be91136", // what is this ?????????!!!!!!!!
+      userEmail: userEmail,
     };
 
     const folder = new folders(folderT);
@@ -34,17 +34,64 @@ class User extends Person {
   async renameFolder(id, newName) {
     await folders.updateOne({ _id: id }, { name: newName });
   }
-  async moveToSpam(emailId) {
+  async moveToSpam(userId, emailId, folderName) {
     await folders.updateOne(
-      { userId: "6751b9c5614bdea23be91136", name: "spam" }, // there proplem here
-      { $push: { emailsID: emailId } }
+      { userEmail: userId, name: "Spam" },
+      { $push: { emailsArray: emailId } }
+    );
+    await folders.updateOne(
+      { userEmail: userId, name: folderName },
+      { $pull: { emailsArray: emailId } }
     );
   }
+  async moveToArchive(userId, emailId, folderName) {
+    await folders.updateOne(
+      { userEmail: userId, name: "Archive" },
+      { $push: { emailsArray: emailId } }
+    );
+    await folders.updateOne(
+      { userEmail: userId, name: folderName },
+      { $pull: { emailsArray: emailId } }
+    );
+  }
+  async moveToDraft(userId, emailId, folderName) {
+    await folders.updateOne(
+      { userEmail: userId, name: "Draft" },
+      { $push: { emailsArray: emailId } }
+    );
+    await folders.updateOne(
+      { userEmail: userId, name: folderName },
+      { $pull: { emailsArray: emailId } }
+    );
+  }
+  async moveToRecycle(userId, emailId, folderId) {
+    await folders.updateOne(
+      { userEmail: userId, name: "RecycleBin" },
+      { $push: { emailsArray: emailId } }
+    );
+    await folders.updateOne(
+      { _id: folderId },
+      { $pull: { emailsArray: emailId } }
+    );
+  }
+  async RecoverEmail(userId, emailId, status) {
+    await folders.updateOne(
+      { userEmail: userId, name: "RecycleBin" },
+      { $pull: { emailsArray: emailId } }
+    );
+
+    await folders.updateOne(
+      { userEmail: userId, name: status },
+      { $push: { emailsArray: emailId } }
+    );
+  }
+
+  //recover to the same spot
+
   async search(searchWord) {
     const res = await emails.find({
       $or: [{ supject: { $regex: searchWord } }],
     });
-
     return res;
   }
 }

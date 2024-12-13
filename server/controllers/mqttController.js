@@ -1,45 +1,53 @@
-// controllers/mqttController.js
+const mqtt = require("mqtt");
+const email = require("../Schemas/emailSchema");
+const folder = require("../Schemas/folderSchema");
 
-const mqttHelper = require("../utils/mqttHelper");
+// Replace with your MQTT broker URL
+const brokerUrl = "mqtt://localhost";
 
-// Subscribe to topics on server start
-mqttHelper.connectAndSubscribe();
+// Define the topic you want to subscribe to
+const topic = "email";
 
-// Controller function to handle publishing email message
-const sendEmailMessage = (req, res) => {
-  const { subject, body, to, from } = req.body;
+function createClient() {
+  const client = mqtt.connect(brokerUrl);
 
-  // Construct email message
-  const emailMessage = {
-    subject,
-    body,
-    to,
-    from,
-    date: new Date().toISOString(),
-  };
+  client.on("connect", () => {
+    console.log("Connected to MQTT broker");
+    client.subscribe(topic, (err) => {
+      if (!err) {
+        console.log(`Subscribed to topic: ${topic}`);
+      } else {
+        console.error(`Failed to subscribe: ${err}`);
+      }
+    });
+  });
 
-  // Publish the message to the 'email/send' topic
-  mqttHelper.publishMessage("email/send", emailMessage);
+  client.on("message", async (topic, message) => {
+    const jsonMessage = JSON.parse(message.toString());
 
-  res.status(200).json({ message: "Email message sent to MQTT broker" });
-};
+    try {
+      let Email = await email.create(jsonMessage);
+      // console.log(Email)
+      await folder.updateOne(
+        { userEmail: jsonMessage.sender, name: "Send" },
+        { $push: { emailsArray: Email._id } }
+      );
+      for (const recipuent of Email.recipients) {
+        await folder.updateOne(
+          { userEmail: recipuent, name: "Inbox" },
+          { $push: { emailsArray: Email._id } }
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
-// Controller function to handle publishing notification message
-const sendNotification = (req, res) => {
-  const { notificationMessage } = req.body;
+  client.on("error", (err) => {
+    console.error(`Connection error: ${err}`);
+  });
 
-  const notification = {
-    message: notificationMessage,
-    date: new Date().toISOString(),
-  };
+  return client;
+}
 
-  // Publish the notification to the 'notification/send' topic
-  mqttHelper.publishMessage("notification/send", notification);
-
-  res.status(200).json({ message: "Notification message sent to MQTT broker" });
-};
-
-module.exports = {
-  sendEmailMessage,
-  sendNotification,
-};
+module.exports = { createClient };

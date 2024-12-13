@@ -1,11 +1,22 @@
 const User = require("../models/User");
 const folders = require("../Schemas/folderSchema.js");
-const createFolder = async (req, res) => {
+const emails = require("../Schemas/emailSchema.js");
+
+exports.createFolder = async (req, res) => {
   try {
+    if (req.body.name.length <= 2) {
+      return res
+        .status(500)
+        .json({ mss: "name must be greater than 2 letter" });
+    }
     const user = new User();
-    const result = await folders.find({ name: req.body.name });
+    const result = await folders.find({
+      name: req.body.name,
+      userEmail: req.user.email,
+    });
     if (result.length === 0) {
-      user.createFolder(req.body.name);
+      console.log(req.user);
+      user.createFolder(req.body.name, req.user.email);
       res.status(200).json({ mss: "folder created" });
       return 1;
     }
@@ -14,23 +25,32 @@ const createFolder = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
-const deleteFolder = async (req, res) => {
+exports.deleteFolder = async (req, res) => {
   try {
     const user = new User();
     const result = await folders.find({ _id: req.params.folderId });
+    // result.
     if (result.length !== 0) {
       user.deleteFolder(req.params.folderId);
-      res.status(200).json({ mss: "folder is deleted" });
+      return res.status(200).json({ mss: "folder is deleted" });
     }
-    res.status(500).json({ mss: "folder is not exist" });
+    return res.status(500).json({ mss: "folder is not exist" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message });
   }
 };
-const renameFolder = async (req, res) => {
+exports.renameFolder = async (req, res) => {
   try {
     const user = new User();
-    const result = await folders.find({ name: req.body.name });
+    if (req.body.name.length <= 2) {
+      return res
+        .status(500)
+        .json({ mss: "name must be greater than 2 letter" });
+    }
+    const result = await folders.find({
+      userEmail: req.user.email,
+      name: req.body.name,
+    });
     if (result.length === 0) {
       user.renameFolder(req.params.folderId, req.body.name);
       res.status(200).json({ mss: "folder is updated" });
@@ -42,48 +62,71 @@ const renameFolder = async (req, res) => {
   }
 };
 
-const moveToSpam = async (req, res) => {
+exports.moveToSpam = async (req, res) => {
   try {
     const user = new User();
 
-    user.moveToSpam(req.body.name);
-    res.status(200).json({ mss: "done" });
+    const result = await emails.find({ _id: req.params.emailId });
+    if (result.length === 0) {
+      return res.status(400).json({ mss: "it is not email" });
+    }
+    user.moveToSpam(req.user.email, req.params.emailId, req.params.folderName);
+    return res.status(200).json({ mss: "done" });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message });
+  }
+};
+exports.moveToRecycleBin = async (req, res) => {
+  try {
+    const user = new User();
+
+    const result = await emails.find({ _id: req.params.emailId });
+    if (result.length === 0) {
+      return res.status(400).json({ mss: "it is not email" });
+    }
+    user.moveToRecycle(req.user.email, req.params.emailId, req.params.folderId);
+    return res.status(200).json({ mss: "done" });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
   }
 };
 
-const searchEmails = async (req, res) => {
+exports.RecoverFromRecycleBin = async (req, res) => {
+  try {
+    const user = new User();
+    const result = await emails.find({ _id: req.params.emailId });
+    if (result.sender == req.user.email) {
+      user.RecoverEmail(req.user.email, req.params.emailId, "Send");
+    } else user.RecoverEmail(req.user.email, req.params.emailId, "Inbox");
+    return res.status(200).json({ msg: "recovered" });
+  } catch (error) {
+    res.status(500).json({ msg: `something went wrong \n ${error.message}` });
+  }
+};
+
+exports.searchEmails = async (req, res) => {
   try {
     const user = new User();
 
     const result = await user.search(req.body.searchName);
-    console.log(result);
     res.status(200).json({ data: result });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 };
 
-const createRecycleBinFolder = async (req, res) => {
-  const existingFolder = await folders.findOne({ name: "Recycle Bin" });
-
-  if (!existingFolder) {
-    await folders.create({
-      name: "Recycle Bin",
-      userId: "674e23c4be7dcb4a41c49a8f",
-    });
-    res.status(200).json({ mss: "Recycle Bin folder created " });
-  } else {
-    console.log("Recycle Bin folder already exists");
+exports.getFolder = async (req, res, next) => {
+  try {
+    let user = req.user;
+    let Fname = req.params.Fname != null ? req.params.Fname : "Inbox";
+    req.Fname = Fname;
+    req.EID = await folders.findOne(
+      { name: Fname, userEmail: user.email },
+      { emailsArray: 1, _id: 0 }
+    );
+    // console.log(req.EID)
+    next();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-};
-
-module.exports = {
-  createFolder,
-  deleteFolder,
-  renameFolder,
-  moveToSpam,
-  searchEmails,
-  createRecycleBinFolder,
 };

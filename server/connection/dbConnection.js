@@ -1,7 +1,7 @@
 // connection/dbConnection.js
 const mongoose = require("mongoose");
 const newId = new mongoose.Types.ObjectId();
-
+// mongodb+srv://7assanas34:123@cluster0.d2xp3.mongodb.net/SWproject  // hassan db connection
 // Database Singleton Class
 
 class Database {
