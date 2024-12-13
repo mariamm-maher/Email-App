@@ -7,7 +7,7 @@ import Sidebar from "./sidebar";
 const Layout=()=>{
     
    return(<>
-        <Navbar/>
+        <Navbar/> 
 
             <div className="flex">
                 <Sidebar/>

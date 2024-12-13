@@ -1,11 +1,16 @@
 import React from "react";
-
+import AOS from "aos";
+import 'aos/dist/aos.css';
+import { useEffect } from "react";
 
 
 const Addresses =()=>
     {
+      useEffect(() => {
+        AOS.init();
+      }, [])
         return(<>
-        <form class=" p-7 rounded-lg mx-auto w-[800px] h-[350px] mt-10 border-2">
+        <form data-aos="flip-right"  data-aos-duration="1500" class=" bg-darkNavyBlue p-7 rounded-lg mx-auto w-[800px] h-[350px] mt-10 ">
               <div className="z-0 w-full">
                 <h1 className="font-sans text-white lg:text-2xl ">Addresses</h1>
               </div>

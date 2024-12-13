@@ -6,6 +6,14 @@ import WelcomePage from "./pages/welcome";
 import HomePage from "./pages/Home";
 import User from "./components/Admin/user";
 import Email from "./components/Admin/email";
+import Layout from "./components/User/layout"
+import Draft from "./components/User/Draft"
+import Starred from "./components/User/Starred"
+import Sent from "./components/User/Sent"
+import Profile from "./pages/UserProfile"
+import Spam from "./components/User/Spam";
+import Trash from "./components/User/Trash";
+
 
 import Admin from "./pages/Admin";
 
@@ -14,16 +22,17 @@ export default function App() {
     <Router>
       <Routes>
       
-        <Route path='/' element={<Layout/>}>
+        {/* <Route path='/' element={<Layout/>}>
         <Route index element={<HomePage/>}/>
         <Route path='/Draft' element={<Draft/>}/>
         <Route path='/Starred' element={<Starred/>}/>
-        <Route path='/Sent' element={<Sent/>}/>
+        <Route path='/Sent' element={<Sent/>}/> */}
+        <Route path='/userprofile' element={<Profile/>}/>
         <Route path='/Spam' element={<Spam/>}/>
         <Route path='/Trash' element={<Trash/>}/>
-        <Route path='/Inbox' element={<Inbox/>}/>
+        {/* <Route path='/Inbox' element={<Inbox/>}/> */}
 
-        </Route>
+        {/* </Route> */}
         
         
         <Route path="/" element={<WelcomePage />} />

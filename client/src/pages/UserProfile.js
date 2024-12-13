@@ -4,6 +4,7 @@ import ProfileInfo from "../components/User/profileInfo";
 import BasicInfo from "../components/User/BasicInfo";
 import ContactInfo from "../components/User/ContactInfo";
 import Addresses from "../components/User/Addresses";
+import Security from "../components/User/Security";
 
 function Profile() {
   return (
@@ -22,7 +23,7 @@ function Profile() {
             <BasicInfo/>
             <ContactInfo/>
             <Addresses/>
-
+            <Security/>
             
           </div>
 

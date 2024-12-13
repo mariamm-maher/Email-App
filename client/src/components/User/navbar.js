@@ -1,5 +1,6 @@
 import React from "react";
 import { Outlet , Link } from "react-router-dom";
+import Box from "./Box";
 
 
 
@@ -8,14 +9,13 @@ const Navbar=()=>{
 
     return(<>
     
-    <nav class="fixed top-0 z-50 w-full bg-white bg-opacity-80 dark:bg-darkNavyBlue dark:border-gray-700">
-    <div class="absolute inset-x-0 top-[-80px] h-full bg-gradient-to-r from-darkNavyBlue to-neonMintGreen blur-2xl -z-10"></div>
+    <nav class="top-0 z-50 w-full bg-white bg-opacity-80 dark:bg-darkNavyBlue dark:border-gray-700">
 
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start rtl:justify-end">
                 <a href="#" class="flex ms-2 md:me-24">
-                    <span class="self-center text-xl font-semibold sm:text-3xl whitespace-nowrap text-neonMintGreen">
+                    <span class="self-center text-xl font-semibold sm:text-3xl whitespace-nowrap text-neonMintGreen z-50">
                         Mailer
                     </span>
                 </a>
@@ -41,15 +41,8 @@ const Navbar=()=>{
                 </div>
             </form>
 
-            <div class="flex items-center">
-                <div class="flex items-center ms-3">
-                    <div>
-                        <Link to="/Profile" class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-                            <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo" />
-                        </Link>
-                    </div>
-                </div>
-            </div>
+
+            <Box/>
         </div>
     </div>
 </nav>
@@ -70,3 +63,4 @@ const Navbar=()=>{
 }
 
 export default Navbar;
+

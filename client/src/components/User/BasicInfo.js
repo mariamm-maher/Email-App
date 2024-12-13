@@ -1,14 +1,18 @@
 import React from "react";
-// import Button from "../global/Button";
+import AOS from "aos";
+import 'aos/dist/aos.css';
+import { useEffect } from "react";
 
 
 
 
 const BasicInfo =()=>
 {
-
+  useEffect(() => {
+    AOS.init();
+  }, [])
     return(<>
-    <form className=" grid grid-rows-6 p-7 rounded-lg w-[800px] h-[400px] mt-10 border-2 ">
+    <form data-aos="flip-right"  data-aos-duration="1500" className="bg-darkNavyBlue grid grid-rows-6 p-7 rounded-lg w-[800px] h-[400px] mt-10">
       <div className="z-0 w-full">
         <h1 className="font-sans lg:text-2xl text-neonMintGreen">Basic info</h1>
       </div>

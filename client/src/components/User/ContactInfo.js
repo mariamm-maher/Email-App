@@ -1,9 +1,17 @@
 import React from "react";
+import AOS from "aos";
+import 'aos/dist/aos.css';
+import { useEffect } from "react";
+
 
 const ContactInfo =()=>
 {
+  useEffect(() => {
+    AOS.init();
+  }, [])
     return(<>
-            <form class=" p-7 rounded-lg  mx-auto w-[800px]  h-[250px] mt-10 border-2">
+            <form data-aos="flip-right"  data-aos-duration="1500" class=" bg-darkNavyBlue p-7 rounded-lg  mx-auto w-[800px]  h-[250px] mt-10 -z-50">
+            
               <div className="z-0 w-full">
                 <h1 className="font-sans lg:text-2xl text-neonMintGreen">
                   Contact info
