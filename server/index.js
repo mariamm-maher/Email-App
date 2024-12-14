@@ -1,25 +1,25 @@
 const express = require("express");
+require("./connection/dbConnection");
+require("dotenv").config();
+
+const cors = require("cors");
 const app = express();
 app.use(express.json());
-require("./connection/dbConnection"); // Database singleton pattern.
-require("../server/controllers/mqttController").createClient();
-const emailRoute = require("./routes/emailRoute");
-const AdminRoutes = require("./routes/AdminRoutes");
-const ProfileRoutes = require("./routes/profileRoute");
-const folderRoutes = require("./routes/folderRoutes");
-// const profileRoute = require("./routes/profileRoute");
-app.use("/", emailRoute);
+app.use(cors());
 
-const AdminRoutes = require("./routes/AdminRoutes");
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Allow only frontend origin
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"], // Allow specific methods
+  })
+);
+
 const authRoutes = require("./routes/authRoutes");
-const foldersRoutes = require("./routes/folderRoutes.js");
-
-// app.use("/", folderRoutes);
-
-// app.use("/", AdminRoutes);
-// app.use("/auth", authRoutes);
-
-// app.use("/folder",foldersRoutes);
+// login ✅ , sign up ✅
+app.use("/", authRoutes);
+// send
+const emailRoutes = require("./routes/emailRoute");
+app.use("/", emailRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

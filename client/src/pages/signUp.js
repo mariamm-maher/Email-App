@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import InputField from "../components/global/input";
 import BackgroundAnimation from "../components/global/background";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 export default function SignUpPage() {
@@ -11,83 +12,77 @@ export default function SignUpPage() {
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Clear the error when the user starts typing
+    // Clear specific error
     setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required.";
-    }
-
-    // Email validation
+    if (!formData.name.trim()) newErrors.name = "Name is required.";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) {
-      newErrors.email = "Email is required.";
-    } else if (!emailRegex.test(formData.email)) {
+    if (!formData.email) newErrors.email = "Email is required.";
+    else if (!emailRegex.test(formData.email))
       newErrors.email = "Invalid email format.";
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required.";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
-    }
+    if (!formData.password) newErrors.password = "Password is required.";
+    else if (formData.password.length < 8)
+      newErrors.password = "Password must be at least 8 characters.";
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    // Validate form before sending the API request
-    if (!validateForm()) {
-      return;
-    }
-
+    setLoading(true);
     try {
-      const response = await fetch("https://your-api-url.com/api/signup", {
+      const response = await fetch("http://localhost:5000/SignUp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create account");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create account");
       }
 
-      const data = await response.json();
-      console.log("Account created successfully:", data);
-      alert("Sign up successful!");
+      console.log("Account created successfully");
+      setSuccess(true);
     } catch (error) {
-      console.error("Error during sign up:", error);
-      alert("An error occurred. Please try again.");
+      setErrors({ submit: error.message });
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (success) {
+      navigate("/login", { state: { successMessage: "Sign up successful!" } });
+    }
+  }, [success, navigate]);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-darkNavyBlue">
-      {/* Animated Background */}
       <BackgroundAnimation />
-
-      {/* Sign Up Form */}
       <div className="z-10 bg-gradient-to-r from-darkNavyBlue via-gray-900 to-darkNavyBlue p-10 rounded-lg shadow-xl w-full max-w-md">
+        {/* {success && (
+          <div className="bg-green-500 text-white font-bold p-4 rounded mb-4 text-center">
+            Sign up successful!{" "}
+            <Link to="/login" className="underline">
+              Click here to log in.
+            </Link>
+          </div>
+        )} */}
         <h2 className="text-3xl font-bold text-center text-pureWhite">
           Create an Account
         </h2>
@@ -104,15 +99,11 @@ export default function SignUpPage() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter your name"
-                className="py-3 px-4 rounded-lg bg-darkNavyBlue text-pureWhite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neonMintGreen"
               />
               {errors.name && (
                 <span className="text-red-500 text-sm">{errors.name}</span>
               )}
             </div>
-          </div>
-
-          <div className="flex flex-col space-y-4 items-center">
             <div className="flex flex-col space-y-1">
               <label htmlFor="email" className="text-pureWhite font-semibold">
                 Email
@@ -124,15 +115,11 @@ export default function SignUpPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email"
-                className="py-3 px-4 rounded-lg bg-darkNavyBlue text-pureWhite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neonMintGreen"
               />
               {errors.email && (
                 <span className="text-red-500 text-sm">{errors.email}</span>
               )}
             </div>
-          </div>
-
-          <div className="flex flex-col space-y-4 items-center">
             <div className="flex flex-col space-y-1">
               <label
                 htmlFor="password"
@@ -147,47 +134,23 @@ export default function SignUpPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Create a password"
-                className="py-3 px-4 rounded-lg bg-darkNavyBlue text-pureWhite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neonMintGreen"
               />
               {errors.password && (
                 <span className="text-red-500 text-sm">{errors.password}</span>
               )}
             </div>
           </div>
-
-          {/* <div className="flex flex-col space-y-4 items-center">
-            <div className="flex flex-col space-y-1">
-              <label
-                htmlFor="confirmPassword"
-                className="text-pureWhite font-semibold"
-              >
-                Confirm Password
-              </label>
-              <InputField
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Re-enter your password"
-                className="py-3 px-4 rounded-lg bg-darkNavyBlue text-pureWhite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neonMintGreen"
-              />
-              {errors.confirmPassword && (
-                <span className="text-red-500 text-sm">
-                  {errors.confirmPassword}
-                </span>
-              )}
-            </div>
-          </div> */}
-
           <button
             type="submit"
             className="w-full bg-neonMintGreen text-darkNavyBlue font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300 hover:bg-green-500"
+            disabled={loading}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
+          {errors.submit && (
+            <span className="text-red-500 text-sm">{errors.submit}</span>
+          )}
         </form>
-
         <p className="mt-4 text-center text-sm text-gray-400">
           Already have an account?{" "}
           <Link to="/login" className="text-neonMintGreen hover:underline">

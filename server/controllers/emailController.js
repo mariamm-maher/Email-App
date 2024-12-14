@@ -323,6 +323,7 @@ module.exports = {
   deleteEmail,
   recoverEmail,
   sortEmails,
+  EmailModel,
 };
 
 // // controllers/emailController.js

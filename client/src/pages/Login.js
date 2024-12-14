@@ -1,67 +1,87 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import InputField from "../components/global/input";
 import { Link, useNavigate } from "react-router-dom";
 import BackgroundAnimation from "../components/global/background";
+import { useLocation } from "react-router-dom";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // For displaying error messages
-  const navigate = useNavigate(); // For navigation
+  const location = useLocation();
+  const successMessage = location.state?.successMessage;
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const navigate = useNavigate();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    // Clear specific error
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
+  };
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.email.trim() || !formData.password.trim())
+      newErrors.name = "All fields are required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic validation
-    if (!email || !password) {
-      setError("Email and password are required.");
-      return;
-    }
-
+    if (!validateForm()) return;
+    setLoading(true);
     try {
-      // API call to check user login
-      const response = await fetch("https://api.example.com/login", {
+      const response = await fetch("http://localhost:5000/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Check user role and navigate
-        if (data.role === "admin") {
-          navigate("/dashboard"); // Redirect to admin dashboard
-        } else if (data.role === "user") {
-          navigate("/home"); // Redirect to homepage for regular users
-        } else {
-          setError("Unknown user role. Contact support.");
-        }
-      } else {
-        // Handle login errors
-        setError(data.message || "Invalid email or password.");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create account");
       }
-    } catch (err) {
-      // Handle network or other errors
-      setError("An error occurred. Please try again later.");
+      const data = await response.json();
+      const token = data.token; // Assuming your backend sends { token: "your-jwt-token" }
+
+      // Save token to localStorage
+      localStorage.setItem("authToken", token);
+      // alert("the token :" + token);
+      console.log("Login successful, token saved!");
+      setSuccess(true);
+    } catch (error) {
+      setErrors({ submit: error.message });
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (success) {
+      navigate("/home", { state: { successMessage: "login successful!" } });
+    }
+  }, [success, navigate]);
   return (
     <div className="flex items-center justify-center min-h-screen bg-darkNavyBlue relative">
       {/* Animated Background */}
       <BackgroundAnimation />
-
+      {successMessage && (
+        <div className="fixed top-3 right-8 bg-green-500 text-white font-bold p-4 rounded mb-4 text-center">
+          {successMessage}
+        </div>
+      )}
       {/* Login Form */}
       <div className="z-10 bg-gradient-to-r from-darkNavyBlue via-gray-900 to-darkNavyBlue p-10 rounded-lg shadow-xl w-full max-w-md">
         <h2 className="text-3xl font-bold text-center text-pureWhite">
           Welcome Back!
         </h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <p className="text-red-500 text-center font-semibold">{error}</p>
+          {errors.name && (
+            <span className="text-red-500 text-sm">{errors.name}</span>
           )}
           <div className="flex flex-col space-y-4 items-center">
             <div className="flex flex-col space-y-1">
@@ -72,8 +92,8 @@ export default function LoginPage() {
                 id="email"
                 name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Enter your email"
                 className="py-3 px-4 rounded-lg bg-darkNavyBlue text-pureWhite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neonMintGreen"
               />
@@ -89,8 +109,8 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Enter your password"
                 className="py-3 px-4 rounded-lg bg-darkNavyBlue text-pureWhite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neonMintGreen"
               />
@@ -99,8 +119,9 @@ export default function LoginPage() {
           <button
             type="submit"
             className="w-full bg-neonMintGreen text-darkNavyBlue font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300 hover:bg-green-500"
+            disabled={loading}
           >
-            Log In
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-400">
