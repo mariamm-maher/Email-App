@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { getAuthToken } from "../../hooks/auth";
+import { getAuthToken, getUserData } from "../../hooks/auth";
 
 const ComposeEmail = ({ onClose }) => {
-  // State for form fields
   const [recipient, setRecipient] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -14,25 +13,24 @@ const ComposeEmail = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Get the ID of the current user from the token
+    // Get the token and user data
     const token = getAuthToken();
-    const from = token ? token.userId : ""; // Assuming token contains userId (you should verify this)
+    const user = getUserData();
 
-    // Prepare email data with dynamic form values
+    if (!token || !user) {
+      setStatusMessage("User is not logged in.");
+      return;
+    }
+
     const emailData = {
-      from, // get the ID of the current user from the token
-      to: recipient, // get from the form
-      subject, // get from the form
-      messages: body, // get from the form
-      status: "sent", // default value
-      folder: "63e4b2f6f10a3e00123abcd7", // default folder ID
-      cc: cc ? cc.split(",").map((email) => email.trim()) : [], // optional, split cc emails if provided
-      repliedTo: "", // optional (you can dynamically set this if needed)
-      isPinned: false, // default value
+      from: user.email, // sender email
+      to: recipient, // recipient email (from the form)
+      subject,
+      messages: body,
+      cc: cc ? cc.split(",").map((email) => email.trim()) : [],
+      repliedTo: "",
+      isPinned: false,
     };
-
-    console.log("Email Data:", emailData);
-    setStatusMessage("Email composed successfully!");
 
     try {
       const response = await fetch(
@@ -40,19 +38,14 @@ const ComposeEmail = ({ onClose }) => {
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // Include the token
+            authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(emailData), // Send the email data as JSON
+          body: JSON.stringify(emailData),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to send email");
-      }
-
-      const data = await response.json();
-      console.log(data);
+      if (!response.ok) throw new Error("Failed to send email");
       setStatusMessage("Email sent successfully!");
     } catch (error) {
       console.error("Error sending email:", error);
@@ -151,7 +144,7 @@ const ComposeEmail = ({ onClose }) => {
 
         {/* Status Message */}
         {statusMessage && (
-          <p className="text-sm text-center mt-4 text-gray-400">
+          <p className="text-sm text-center mt-4 text-green-400">
             {statusMessage}
           </p>
         )}

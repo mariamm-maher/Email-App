@@ -4,71 +4,78 @@
 const EmailModel = require("../Schemas/emailSchema");
 const mongoose = require("mongoose");
 
-const sendEmail = async (req, res) => {
-  const {
-    from,
-    to,
-    subject,
-    cc,
-    messages,
-    status,
-    folder,
-    repliedTo,
-    isPinned,
-    muteStatus,
-  } = req.body;
+const email = require("../Schemas/emailSchema");
 
-  console.log(req.body);
+// const ListEmails = async (req, res) => {
+//   try {
+//     let EID = req.EID;
+//     // console.log(EID.emailsArray)
+//     let emails = await email.find({ _id: { $in: EID.emailsArray } });
+//     // console.log(emails);
+//     return res.status(200).json({ Fname: req.Fname, emails: emails });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+const ListEmails = async (req, res) => {
+  try {
+    if (!req.EID || !req.EID.emailsArray) {
+      return res
+        .status(400)
+        .json({ error: "EID or emailsArray is not defined." });
+    }
+
+    let emails = await email.find({ _id: { $in: req.EID.emailsArray } });
+    return res.status(200).json({ Fname: req.Fname, emails: emails });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "An unexpected error occurred." });
+  }
+};
+
+const sendEmail = async (req, res) => {
+  const { from, to, subject, cc, messages, repliedTo, isPinned, muteStatus } =
+    req.body;
 
   try {
-    if (!from || !to || !subject || !messages || !folder) {
-      return res.status(400).send("Missing required fields");
+    // Validate required fields
+    if (!from || !to || !subject || !messages) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    if (
-      !mongoose.Types.ObjectId.isValid(from) ||
-      !mongoose.Types.ObjectId.isValid(to)
-    ) {
-      return res.status(400).send("Invalid from or to ObjectId");
-    }
-    if (!mongoose.Types.ObjectId.isValid(folder)) {
-      return res.status(400).send("Invalid folder ObjectId");
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(from) || !emailRegex.test(to)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid email address in 'from' or 'to'" });
     }
 
+    // Validate CC email addresses
+    if (cc && !cc.every((email) => emailRegex.test(email))) {
+      return res.status(400).json({ error: "Invalid email address in 'cc'" });
+    }
+
+    // Save email to the database
     const email = new EmailModel({
-      from: from,
-      to: to,
+      from,
+      to,
       subject,
-      cc: Array.isArray(cc) ? cc.map((id) => id) : [],
+      cc: Array.isArray(cc) ? cc : [],
       body: messages,
-      status: {
-        isDraft: status === "draft" || false,
-        isArchived: status === "archived" || false,
-        isSpam: status === "spam" || false,
-        isImportant: status === "important" || false,
-        isSent: status === "sent" || false,
-      },
-      folder: folder,
-      repliedTo: repliedTo ? repliedTo : null,
+      repliedTo: repliedTo || null,
       isPinned: isPinned || false,
       muteStatus: muteStatus || false,
-      sentAt: status === "sent" ? new Date() : null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
     await email.save();
 
-    if (status === "sent") {
-      return res.status(200).send("Email saved as sent");
-    } else if (status === "draft") {
-      return res.status(200).send("Email saved as draft");
-    } else {
-      return res.status(200).send("Email saved successfully");
-    }
+    return res.status(200).json({ message: "Email saved successfully" });
   } catch (error) {
     console.error("Error saving email:", error);
-    res.status(500).send(`Error processing email request: ${error.message}`);
+    res.status(500).json({ error: `Internal Server Error: ${error.message}` });
   }
 };
 
@@ -79,33 +86,46 @@ const forwardEmail = async (req, res) => {
     const originalEmail = await EmailModel.findById(emailId);
 
     if (!originalEmail) {
-      return res.status(404).send("Original email not found");
+      return res.status(404).json({ error: "Original email not found" });
+    }
+
+    // Validate forwarded email addresses
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (
+      !Array.isArray(forwardTo) ||
+      !forwardTo.every((email) => emailRegex.test(email))
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid email address in 'forwardTo'" });
     }
 
     const forwardedEmail = new EmailModel({
       from: originalEmail.from,
-      to: forwardTo,
+      to: forwardTo.join(", "), // Combine forwarded email addresses as string
       subject: `Fwd: ${originalEmail.subject}`,
       cc: originalEmail.cc,
       body: `Forwarded message:\n\n${originalEmail.body}`,
       status: { isDraft: status === "draft" },
-      folder: originalEmail.folder,
-      repliedTo: originalEmail.repliedTo,
+      repliedTo: originalEmail._id,
       sentAt: status === "sent" ? new Date() : null,
     });
 
     await forwardedEmail.save();
 
     if (status === "sent") {
-      res.status(200).send("Forwarded email saved and marked as sent");
+      res
+        .status(200)
+        .json({ message: "Forwarded email saved and marked as sent" });
     } else {
-      res.status(200).send("Forwarded email saved as draft");
+      res.status(200).json({ message: "Forwarded email saved as draft" });
     }
   } catch (error) {
     console.error("Error forwarding email:", error);
-    res.status(500).send("Error forwarding email");
+    res.status(500).json({ error: "Error forwarding email" });
   }
 };
+
 const repliedTo = async (req, res) => {
   const { emailId, replyMessage, replyAll } = req.body;
 
@@ -113,7 +133,7 @@ const repliedTo = async (req, res) => {
     const originalEmail = await EmailModel.findById(emailId);
 
     if (!originalEmail) {
-      return res.status(404).send("Original email not found");
+      return res.status(404).json({ error: "Original email not found" });
     }
 
     const recipients = replyAll
@@ -121,25 +141,25 @@ const repliedTo = async (req, res) => {
       : [originalEmail.from];
 
     const replyEmail = new EmailModel({
-      from: originalEmail.to,
-      to: originalEmail.from,
+      from: originalEmail.to, // Original 'to' becomes 'from' in reply
+      to: originalEmail.from, // Original 'from' becomes 'to' in reply
       cc: replyAll ? originalEmail.cc : undefined,
       subject: `Re: ${originalEmail.subject}`,
       body: replyMessage,
       repliedTo: originalEmail._id,
       sentAt: new Date(),
       isPinned: originalEmail.isPinned,
-      folder: originalEmail.folder,
     });
 
     await replyEmail.save();
 
-    res.status(200).send("Reply saved successfully");
+    res.status(200).json({ message: "Reply saved successfully" });
   } catch (error) {
     console.error("Error replying to email:", error);
-    res.status(500).send("Error saving reply email");
+    res.status(500).json({ error: "Error saving reply email" });
   }
 };
+
 const markEmailReadStatus = async (req, res) => {
   const { emailId, isRead } = req.body;
 
@@ -164,8 +184,6 @@ const markEmailReadStatus = async (req, res) => {
         .status(500)
         .json({ error: err.message || "Error saving updated email" });
     });
-
-    // console.log("Updated email:", updatedEmail);
 
     return res.status(200).json({
       message: "Email successfully marked as read",
@@ -324,6 +342,7 @@ module.exports = {
   recoverEmail,
   sortEmails,
   EmailModel,
+  ListEmails,
 };
 
 // // controllers/emailController.js

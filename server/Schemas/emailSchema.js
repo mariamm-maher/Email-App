@@ -3,21 +3,17 @@ const mongoose = require("mongoose");
 const emailSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   body: { type: String },
-  // sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, //omar modifications
-  // recipients: [
-  //   { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  // ],
-  to: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Referencing 'User'
-  from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  cc: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // For CC recipients
-  attachments: [{ type: String }],
-  status: {
-    isDraft: { type: Boolean, default: false },
-    isArchived: { type: Boolean, default: false },
-    isSpam: { type: Boolean, default: false },
-    isRead: { type: Boolean, default: false },
-    isImportant: { type: Boolean, default: false },
-  },
+  to: { type: String, required: true }, // Email address for recipient
+  from: { type: String, required: true }, // Email address for sender
+  cc: [{ type: String }], // Array of email addresses for CC recipients
+  attachments: [{ type: String }], // Array of attachment paths or URLs
+  // status: {
+  //   isDraft: { type: Boolean, default: false },
+  //   isArchived: { type: Boolean, default: false },
+  //   isSpam: { type: Boolean, default: false },
+  //   isRead: { type: Boolean, default: false },
+  //   isImportant: { type: Boolean, default: false },
+  // },
   repliedTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "emails", // Reference to an email if it's a reply
@@ -39,11 +35,6 @@ const emailSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // false means the email is not pinned
   },
-  // folder: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "folders", // Reference to the Folder schema
-  //   required: true,
-  // },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -56,8 +47,6 @@ const emailSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  sentAt: { type: Date },
-  // createdAt: { type: Date, default: Date.now },
 });
 
 emailSchema.pre("save", function (next) {

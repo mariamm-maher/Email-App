@@ -21,12 +21,6 @@ const userSchema = new mongoose.Schema({
     minlength: 8,
     max_length: 100,
   },
-  folder: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "folders",
-    },
-  ],
   notification: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "notifications",
@@ -40,6 +34,7 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
   profileImage: { type: String, default: null },
+  role: { type: String, default: "User" },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -48,7 +43,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  role: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },
+  // role: { type: mongoose.Schema.Types.ObjectId, ref: "roles" },
 });
 
 userSchema.pre("save", function (next) {

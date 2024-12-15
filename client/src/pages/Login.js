@@ -5,6 +5,7 @@ import BackgroundAnimation from "../components/global/background";
 import { useLocation } from "react-router-dom";
 
 export default function LoginPage() {
+  const [userRole, setUserRole] = useState("");
   const location = useLocation();
   const successMessage = location.state?.successMessage;
   const [formData, setFormData] = useState({
@@ -43,15 +44,17 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create account");
+        throw new Error(errorData.message || "Failed to log in");
       }
-      const data = await response.json();
-      const token = data.token; // Assuming your backend sends { token: "your-jwt-token" }
 
-      // Save token to localStorage
+      const data = await response.json(); // data contains { message, user, token }
+      const { token, user } = data;
+      setUserRole(user.role);
+      // Save token and user to localStorage
       localStorage.setItem("authToken", token);
-      // alert("the token :" + token);
-      console.log("Login successful, token saved!");
+      localStorage.setItem("user", JSON.stringify(user));
+
+      console.log("Login successful, token and user saved!");
       setSuccess(true);
     } catch (error) {
       setErrors({ submit: error.message });
@@ -62,9 +65,20 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (success) {
-      navigate("/home", { state: { successMessage: "login successful!" } });
+      // Navigate based on role
+      if (userRole === "Admin") {
+        navigate("/admin", {
+          state: { successMessage: "Admin login successful!" },
+        });
+      } else if (userRole === "User") {
+        navigate("/home", {
+          state: { successMessage: "User login successful!" },
+        });
+      } else {
+        console.error("Unknown role detected:", userRole);
+      }
     }
-  }, [success, navigate]);
+  }, [success, userRole, navigate]);
   return (
     <div className="flex items-center justify-center min-h-screen bg-darkNavyBlue relative">
       {/* Animated Background */}

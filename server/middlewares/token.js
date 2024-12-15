@@ -21,7 +21,7 @@ class token {
       this.#payload,
       "e4a0cb07162994ea02acbefda5af23dcdbbb5c42ab6a5e4cb220748001e04453fa2c085e6336827c1278e9fe984f4b464fabb8f581f66bdd326b9415567f176b",
       {
-        expiresIn: "30m",
+        expiresIn: "5d",
       }
     );
     console.log(this.#token);

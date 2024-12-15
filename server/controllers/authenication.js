@@ -14,7 +14,7 @@ exports.login = async (req, res) => {
     if (email != null && password != null) {
       let user = await User.findOne({ email: email });
       if (user != null) {
-        console.log(user);
+        // console.log(user);
         let pass = new Pass(password, user.password);
         let isvalid = await pass.verfiyPassword();
         if (isvalid != -1) {
@@ -24,9 +24,10 @@ exports.login = async (req, res) => {
               id: user.id,
               name: user.name,
               email: user.email,
-              // role: user.role,
+              role: user.role,
+              // role: "Admin",
             };
-            // console.log(payload);
+            console.log(payload);
             // let t = new Token()
             let token = await Token.generateToken(payload);
             // console.log(`the generated token ${token}`); //mariam
