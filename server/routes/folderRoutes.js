@@ -55,5 +55,9 @@ router.get(
   folder.getFolder,
   email.ListEmails
 );
-
+router.post(
+  "/api/folders/movetofolder/:Fname1/:emailId/:Fname2",
+  authController.AuthToken,
+  folder.moveToFolder
+);
 module.exports = router;

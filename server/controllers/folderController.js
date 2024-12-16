@@ -115,6 +115,26 @@ exports.searchEmails = async (req, res) => {
   }
 };
 
+exports.moveToFolder = async (req, res) => {
+  try {
+    // /:Fname1/:emailId/:Fname2
+    const user = new User();
+    const email = await emails.findOne({ _id: req.params.emailId });
+    // console.log(email)
+    Fname1 = req.params.Fname1.toLowerCase();
+    Fname2 = req.params.Fname2.toLowerCase();
+    // console.log(`controller\nfname1:${Fname1}\nfname2:${Fname2}`)
+    if (email == null) {
+      return res.status(400).json({ msg: "email not found" });
+    } else {
+      await user.moveToFolder(req.user.email, email.id, Fname1, Fname2);
+      return res.status(200).json({ msg: "done" });
+    }
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+};
+
 exports.getFolder = async (req, res, next) => {
   try {
     let user = req.user;

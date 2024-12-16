@@ -25,5 +25,9 @@ app.use("/", emailRoutes);
 const folderRoutes = require("./routes/folderRoutes");
 app.use("/", folderRoutes);
 
+//admin routes
+const adminRoutes = require("./routes/adminRoutes");
+app.use("/", adminRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

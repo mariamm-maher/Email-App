@@ -33,7 +33,7 @@ const FolderStarred = () => {
   return (
     <ul className="divide-y divide-gray-200 dark:divide-gray-700 mt-16">
       {folderData.map((email) => (
-        <EmailItem key={email._id} email={email} /> // Render each email dynamically
+        <EmailItem key={email._id} email={email} folderName="Archive" /> // Render each email dynamically
       ))}
     </ul>
   );

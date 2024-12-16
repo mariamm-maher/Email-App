@@ -40,14 +40,16 @@ const Navbar = () => {
           {/* Logout Button */}
           <button className="flex items-center px-4 py-2  hover:border-b-2 hover:border-red-700  hover:text-red-500 transition-all duration-700">
             <FaSignOutAlt className="text-xl" />
-            <span className="ml-2">Logout</span>
+            <a className="ml-2" href="http://localhost:3000/">
+              Logout
+            </a>
           </button>
         </div>
 
         {/* Profile Modal */}
-        {isProfileOpen && (
+        {/* {isProfileOpen && (
           <ProfileModal user={user} onClose={handleCloseModal} />
-        )}
+        )} */}
       </nav>
     </>
   );

@@ -1,85 +1,41 @@
-import axios from 'axios';
+import axios from "axios";
 
-const BASE_URL = 'https://*******/api/emails'; //putting here the api url
+const FOLDER_API_BASE_URL = "http://localhost:5000/api/folders";
 
-export const fetchEmails = async () => {
+export const moveToFolder = async (emailId, fromFolder, toFolder) => {
   try {
-    const response = await axios.get(BASE_URL);
+    const response = await axios.post(
+      `${FOLDER_API_BASE_URL}/movetofolder/${fromFolder}/${emailId}/${toFolder}`
+    );
+    console.log(
+      `Email ${emailId} successfully moved from ${fromFolder} to ${toFolder}`
+    );
     return response.data;
   } catch (error) {
-    console.error('Error fetching emails:', error);
-    return [];
+    console.error(
+      `Error moving email from ${fromFolder} to ${toFolder}:`,
+      error
+    );
+    throw error;
   }
 };
 
-export const trashEmail = async (id) => {
-  try {
-    await axios.post(`${BASE_URL}/trash`, { id });
-  } catch (error) {
-    console.error('Error trashing email:', error);
-  }
-};
+/**
+ * Triggers to move emails to specific folders.
+ */
 
-export const fetchTrashedEmails = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/trash`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching trashed emails:', error);
-    return [];
-  }
-};
+// Delete an email (move to 'Trash')
+export const deleteEmail = (emailId, fromFolder) =>
+  moveToFolder(emailId, fromFolder, "Trash");
 
-export const markAsSpam = async (id) => {
-  try {
-    await axios.post(`${BASE_URL}/spam`, { id });
-  } catch (error) {
-    console.error('Error marking email as spam:', error);
-  }
-};
+// Archive an email (move to 'Archive')
+export const archiveEmail = (emailId, fromFolder) =>
+  moveToFolder(emailId, fromFolder, "Archive");
 
-export const fetchSpamEmails = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/spam`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching spam emails:', error);
-    return [];
-  }
-};
+// Mark email as spam (move to 'Spam')
+export const markAsSpam = (emailId, fromFolder) =>
+  moveToFolder(emailId, fromFolder, "Spam");
 
-export const starEmail = async (id) => {
-  try {
-    await axios.post(`${BASE_URL}/starred`, { id });
-  } catch (error) {
-    console.error('Error starring email:', error);
-  }
-};
-
-export const fetchStarredEmails = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/starred`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching starred emails:', error);
-    return [];
-  }
-};
-
-export const saveAsDraft = async (id) => {
-  try {
-    await axios.post(`${BASE_URL}/draft`, { id });
-  } catch (error) {
-    console.error('Error saving email as draft:', error);
-  }
-};
-
-export const fetchDraftEmails = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}/draft`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching draft emails:', error);
-    return [];
-  }
-};
+// Star an email (move to 'Starred')
+export const starEmail = (emailId, fromFolder) =>
+  moveToFolder(emailId, fromFolder, "Starred");

@@ -5,7 +5,7 @@ const EmailModel = require("../Schemas/emailSchema");
 const mongoose = require("mongoose");
 
 const email = require("../Schemas/emailSchema");
-
+const Folder = require("../Schemas/folderSchema");
 // const ListEmails = async (req, res) => {
 //   try {
 //     let EID = req.EID;
@@ -33,9 +33,53 @@ const ListEmails = async (req, res) => {
   }
 };
 
+// const sendEmail = async (req, res) => {
+//   const { from, to, subject, cc, messages, repliedTo, isPinned, muteStatus } =
+//     req.body;
+
+//   try {
+//     // Validate required fields
+//     if (!from || !to || !subject || !messages) {
+//       return res.status(400).json({ error: "Missing required fields" });
+//     }
+
+//     // Validate email format
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     if (!emailRegex.test(from) || !emailRegex.test(to)) {
+//       return res
+//         .status(400)
+//         .json({ error: "Invalid email address in 'from' or 'to'" });
+//     }
+
+//     // Validate CC email addresses
+//     if (cc && !cc.every((email) => emailRegex.test(email))) {
+//       return res.status(400).json({ error: "Invalid email address in 'cc'" });
+//     }
+
+//     // Save email to the database
+//     const email = new EmailModel({
+//       from,
+//       to,
+//       subject,
+//       cc: Array.isArray(cc) ? cc : [],
+//       body: messages,
+//       repliedTo: repliedTo || null,
+//       isPinned: isPinned || false,
+//       muteStatus: muteStatus || false,
+//       createdAt: new Date(),
+//       updatedAt: new Date(),
+//     });
+
+//     await email.save();
+
+//     return res.status(200).json({ message: "Email saved successfully" });
+//   } catch (error) {
+//     console.error("Error saving email:", error);
+//     res.status(500).json({ error: `Internal Server Error: ${error.message}` });
+//   }
+// };
 const sendEmail = async (req, res) => {
-  const { from, to, subject, cc, messages, repliedTo, isPinned, muteStatus } =
-    req.body;
+  const { from, to, subject, cc, messages, repliedTo, muteStatus } = req.body;
 
   try {
     // Validate required fields
@@ -56,7 +100,7 @@ const sendEmail = async (req, res) => {
       return res.status(400).json({ error: "Invalid email address in 'cc'" });
     }
 
-    // Save email to the database
+    // Save the email to the database
     const email = new EmailModel({
       from,
       to,
@@ -64,17 +108,35 @@ const sendEmail = async (req, res) => {
       cc: Array.isArray(cc) ? cc : [],
       body: messages,
       repliedTo: repliedTo || null,
-      isPinned: isPinned || false,
+      isPinned: false, // Default: not pinned for the sender
       muteStatus: muteStatus || false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    await email.save();
+    const savedEmail = await email.save();
 
-    return res.status(200).json({ message: "Email saved successfully" });
+    // Add the email to the "Send" folder of the sender
+    await Folder.updateOne(
+      { userEmail: from, name: "Send" },
+      { $push: { emailsArray: savedEmail._id } } // Add email ID to the "Send" folder
+    );
+
+    // Add the email to the "Inbox" folder of the recipient and pin it
+    await Folder.updateOne(
+      { userEmail: to, name: "Inbox" },
+      { $push: { emailsArray: savedEmail._id } } // Add email ID to the "Inbox" folder
+    );
+
+    // Pin the email for the recipient
+    await EmailModel.updateOne(
+      { _id: savedEmail._id },
+      { $set: { isPinned: true } } // Mark as pinned
+    );
+
+    return res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
-    console.error("Error saving email:", error);
+    console.error("Error sending email:", error);
     res.status(500).json({ error: `Internal Server Error: ${error.message}` });
   }
 };
